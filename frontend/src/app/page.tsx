@@ -19,14 +19,20 @@ interface ParsedAnalysis {
 
 // Helper function to parse the AI analysis string
 const parseAnalysis = (analysisText: string): ParsedAnalysis => {
-    const usedSentencesMatch = analysisText.match(/I used the following sentence from the context:\s*([\s\S]*?)\s*My reasoning process is as follows:/);
-    const reasoningMatch = analysisText.match(/My reasoning process is as follows:\s*([\s\S]*?)\s*Confidence Level:/);
-    const confidenceMatch = analysisText.match(/Confidence Level:\s*([\s\S]*)/);
+    const usedSentencesMatch = analysisText.match(/1\.\s*\*\*Sentences used:\*\*\s*([\s\S]*?)(?=2\.\s*\*\*Reasoning:\*\*|$)/);
+    const reasoningMatch = analysisText.match(/2\.\s*\*\*Reasoning:\*\*\s*([\s\S]*?)(?=3\.\s*\*\*Confidence Level:\*\*|$)/);
+    const confidenceMatch = analysisText.match(/3\.\s*\*\*Confidence Level:\*\*\s*([\s\S]*)/);
+
+    // Helper to clean up the captured text by removing leading asterisks and trimming whitespace
+    const cleanText = (text: string | undefined | null): string => {
+        if (!text) return 'Not available.';
+        return text.replace(/\*/g, '').trim();
+    };
 
     return {
-        used_sentences: usedSentencesMatch ? usedSentencesMatch[1].trim() : 'Not available.',
-        reasoning: reasoningMatch ? reasoningMatch[1].trim() : 'Not available.',
-        confidence: confidenceMatch ? confidenceMatch[1].trim() : 'Not available.',
+        used_sentences: cleanText(usedSentencesMatch?.[1]),
+        reasoning: cleanText(reasoningMatch?.[1]),
+        confidence: cleanText(confidenceMatch?.[1]),
     };
 };
 
@@ -99,19 +105,22 @@ export default function ChatPage() {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', p: 2, gap: 2, backgroundColor: '#f0f2f5' }}>
+    <Box sx={{ display: 'flex', height: '100vh', p: 2, backgroundColor: '#f5f5f5' }}>
 
       {/* AI Analysis Column */}
-      <Box sx={{ width: '40%', display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h5" gutterBottom sx={{ color: 'text.secondary', fontWeight: 'bold', flexShrink: 0 }}>
-          AI Analysis
-        </Typography>
-        <Card sx={{ flexGrow: 1, overflowY: 'auto' }}>
-          <CardContent>
+      <Box sx={{ width: '40%', pr: 2, display: 'flex', flexDirection: 'column' }}>
+        <Card sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', borderRadius: '12px' }}>
+          <CardContent sx={{ flexGrow: 1, overflowY: 'auto' }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+              AI Analysis
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
             {analysis ? (
               <>
                 <Typography variant="h6" gutterBottom>Confidence</Typography>
-                <Typography paragraph sx={{ color: 'primary.main', fontWeight: 'bold' }}>{analysis.confidence}</Typography>
+                <Typography paragraph sx={{ fontWeight: 'bold', color: analysis.confidence === 'High' ? 'green' : 'orange' }}>
+                  {analysis.confidence}
+                </Typography>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom>Reasoning</Typography>
                 <Typography paragraph>{analysis.reasoning}</Typography>
