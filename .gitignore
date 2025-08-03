@@ -22,3 +22,6 @@ yarn-error.log*
 # ChromaDB
 backend/chroma_db/
 backend/source_docs/
+localhost_3000_.png
+localhost_3000_chat (1).png
+localhost_3000_chat.png
