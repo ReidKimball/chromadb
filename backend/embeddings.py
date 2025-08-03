@@ -9,20 +9,22 @@ load_dotenv()
 
 class CustomGoogleGenerativeAIEmbeddings(Embeddings):
     """A custom embedding class that uses the google-genai library directly."""
-    def __init__(self, model: str = "models/gemini-embedding-001"):
+    def __init__(self, model: str = "models/gemini-embedding-001"): # Default model
         self.model = model
-        # Configure the API key at initialization
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
+        # In the new version, we create a client instance.
+        # The client automatically uses the GEMINI_API_KEY from the environment.
+        if not os.getenv("GEMINI_API_KEY"):
             raise ValueError("GEMINI_API_KEY not found in .env file.")
-        genai.configure(api_key=api_key)
+        self.client = genai.Client()
 
     def _embed(self, texts: List[str]) -> List[List[float]]:
         """Helper function to embed a list of texts."""
         try:
-            # Note: The 'content' parameter can be a single string or a list of strings.
-            result = genai.embed_content(model=self.model, content=texts)
-            return result['embedding']
+            # Call the embed_content method on the client's model object
+            result = self.client.models.embed_content(model=self.model, contents=texts)
+            # The API returns a list of ContentEmbedding objects. We need to extract the
+            # raw list of floats from the .values attribute of each object.
+            return [embedding.values for embedding in result.embeddings]
         except Exception as e:
             print(f"An error occurred during embedding: {e}")
             # Return a list of empty lists, one for each text that failed.
