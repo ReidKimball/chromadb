@@ -1,43 +1,47 @@
-import os
-import google.genai as genai
-from dotenv import load_dotenv
+import requests
+import json
 
-# --- Setup ---
-# Load environment variables from .env file
-load_dotenv()
+# The URL of the FastAPI endpoint
+URL = "http://127.0.0.1:8000/api/chat"
 
-print("Attempting to configure Google API...")
+# The header to specify that we are sending JSON
+headers = {
+    "Content-Type": "application/json"
+}
 
-# Configure the API key
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise ValueError("GEMINI_API_KEY not found in .env file.")
+# The data payload for the POST request
+# This needs to match the ChatRequest Pydantic model in main.py
+chat_request_data = {
+    "system_prompt": "You are a helpful and friendly AI assistant specializing in dietary information. Your name is Nutri-Chat. You must answer user questions based *only* on the context provided. After your user-facing reply, you MUST include a special <AI_ANALYSIS> block. In this block, you will 'think out loud'. First, state which specific sentences from the context you used to form your answer. Second, explain your reasoning step-by-step. Third, state your confidence level (High, Medium, or Low). If the context does not contain the answer, you must state that and explain why the provided context is insufficient.",
+    "system_prompt_filename": "SCD_Diet.md",
+    "diet": "SCD",  # The new required field for metadata filtering
+    "history": [],
+    "user_message": "is spirulina allowed?",
+    "model_name": "gemini-2.5-flash-lite" # Optional: specify a model
+}
 
-genai.configure(api_key=api_key)
+print(f"Sending POST request to {URL}...")
+print("--- Request Payload ---")
+print(json.dumps(chat_request_data, indent=2))
+print("-----------------------\n")
 
-print("API configured successfully.")
-
-# --- API Call ---
 try:
-    print("Attempting to embed content...")
-    
-    # The text to embed
-    text_to_embed = "This is a simple test."
-    
-    # The model to use
-    model = "models/gemini-embedding-001" # Note: The official library uses 'embedding-001', not 'gemini-embedding-001'
-    
-    # Make the API call
-    result = genai.embed_content(model=model, content=text_to_embed)
-    
-    # --- Verification ---
-    # Check if we received an embedding and print a success message
-    if result['embedding']:
-        print("\nSUCCESS! The API call was successful.")
-        print(f"Received an embedding with {len(result['embedding'])} dimensions.")
-    else:
-        print("\nFAILURE! The API call did not return an embedding.")
-        print(f"API Response: {result}")
+    # Make the POST request
+    response = requests.post(URL, headers=headers, data=json.dumps(chat_request_data))
 
-except Exception as e:
-    print(f"\nAn error occurred: {e}")
+    # Check if the request was successful
+    response.raise_for_status()  # This will raise an exception for HTTP errors (4xx or 5xx)
+
+    # Parse the JSON response
+    response_data = response.json()
+
+    print("--- Server Response (SUCCESS) ---")
+    print(f"Status Code: {response.status_code}")
+    print(f"AI Reply: {response_data.get('reply')}")
+    print(f"AI Analysis: {response_data.get('analysis')}")
+    print("----------------------------------\n")
+
+except requests.exceptions.RequestException as e:
+    print(f"--- Server Response (ERROR) ---")
+    print(f"An error occurred: {e}")
+    print("-------------------------------\n")

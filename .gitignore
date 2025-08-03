@@ -10,6 +10,7 @@ __pycache__/
 .venv
 venv/
 env/
+ai_prompts/
 
 # Node.js
 node_modules/
