@@ -20,7 +20,7 @@ RUN npm install
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL npm run build
 
 # Stage 2: Production image
 FROM node:20-alpine AS runner
@@ -36,7 +36,7 @@ ENV NODE_ENV=production
 # Copy the standalone output from the builder stage
 COPY --from=builder /app/.next/standalone ./
 # Copy the public folder
-COPY --from=builder /app/public ./public
+# COPY --from=builder /app/public ./public
 # Copy the static assets
 COPY --from=builder /app/.next/static ./.next/static
 

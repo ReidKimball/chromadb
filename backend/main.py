@@ -37,12 +37,13 @@ app = FastAPI(
 # This allows the frontend application to communicate with this backend API.
 origins = [
     "http://localhost:3000",  # Local React development server
-    "https://wsdemo-app-165871915889.us-central1.run.app",  # Deployed frontend application
+    "https://chromadb-app-165871915889.us-central1.run.app",  # Deployed frontend application
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Whitelisted origins
+    allow_origins=["http://localhost:3000"],           # local dev
+    allow_origin_regex=r"https://chromadb-app-.*\.run\.app",
     allow_credentials=True, # Allow cookies to be sent
     allow_methods=["*"],    # Allow all HTTP methods
     allow_headers=["*"],    # Allow all request headers

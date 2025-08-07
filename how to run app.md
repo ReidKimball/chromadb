@@ -1,3 +1,16 @@
+# Automated Startup (Recommended)
+
+For convenience, a PowerShell script is provided to automate the startup process. This script will open two new terminal windows, one for the backend and one for the frontend, and start the respective servers.
+
+1.  **Open a terminal** in the root directory of the project (`c:\Users\Reid\Documents\Programming\chromadb`).
+
+2.  **Run the script:**
+    ```powershell
+    .\run_app.ps1
+    ```
+
+This will start both servers automatically. You can then access the application at [http://localhost:3000](http://localhost:3000).
+
 # How to Run This Application
 
 This guide provides instructions on how to set up and run the application, which consists of a Python backend and a Next.js frontend.
